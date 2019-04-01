@@ -1,35 +1,38 @@
 cwlVersion: v1.0
-class: Workflow
-id: bcf_call
+class: CommandLineTool
+id: bcf_filter
 requirements:
-  - class: ScatterFeatureRequirement
-  - class: MultipleInputFeatureRequirement
+  - class: ShellCommandRequirement
+  - class: DockerRequirement
+    dockerPull: 'migbro/ngscheckmate:latest'
+  - class: InlineJavascriptRequirement
+  - class: ResourceRequirement
+    coresMin: 2
+    ramMin: 4000
+
+baseCommand: [bcftools]
+arguments:
+  - position: 1
+    shellQuote: false
+    valueFrom: >-
+        view -R $(inputs.SNP_list.path) $(inputs.input_gvcf.path) -i 'FORMAT/DP>=30' | bgzip > DF.$(inputs.input_gvcf.basename);
+        tabix -p vcf DF.$(inputs.input_gvcf.basename);
+        bcftools convert --gvcf2vcf -f $(inputs.reference_fasta.path) -R $(inputs.SNP_list.path) DF.$(inputs.input_gvcf.basename) -O v | bgzip > CONVERTED.$(inputs.input_gvcf.basename);
+        tabix -p vcf $id.int2.vcf.gz;
+        bcftools view -R $(inputs.SNP_list.path) CONVERTED.$(inputs.input_gvcf.basename) > SF.$(inputs.input_gvcf.nameroot);
+        perl -we 'open(V,$ARGV[0]);while(<V>){s/\s+$//;if(/^\#(\#file|\#FORMAT=\<ID=GT|\#reference|\#bcftools|CHROM)/){print"$_\n";}elsif(!/^\#/){@t=split(/\t/);$h{"$t[0]\t$t[1]"}=$_ if($t[9]=~/^(0\/0|0\/1|1\/1):/);}}close(V);open(S,$ARGV[1]);while(<S>){s/\s+$//;print"$_\t.\t.\t.\tGT\t";@t=split(/\t/);if(exists$h{"$t[0]\t$t[1]"}){@s=split(/\t/,$h{"$t[0]\t$t[1]"});@u=split(/:/,$s[9]);print"$u[0]\n";}else{print"./.\n";}}close(S);' SF.$(inputs.input_gvcf.nameroot) $(inputs.SNP_list.path) > $(inputs.input_gvcf.nameroot.replace("gvcf", "vcf"));
 
 inputs:
-  input_align: File[]
-  chr_list: File
-  reference_fasta: File
-  snp_bed: File
+  input_gvcf:
+    type: File
+    secondaryFiles: ['.tbi']
+  SNP_list: File
+  reference_fasta:
+    type: File
+    secondaryFiles: ['.fai']
 
 outputs:
-  bcf_called_vcf: {type: File, outputSource: bcf_filter/bcf_call}
-
-steps:
-  bcf_filter:
-    run: ../tools/bcf_filter.cwl
-    in:
-      input_align: input_align
-      chr_list: chr_list
-      reference_fasta: reference_fasta
-      snp_bed: snp_bed
-    scatter: [input_align]
-    out: [bcf_call]
-
-
-$namespaces:
-  sbg: https://sevenbridges.com
-hints:
-  - class: 'sbg:AWSInstanceType'
-    value: c5.9xlarge;ebs-gp2;850
-  - class: 'sbg:maxNumberOfParallelInstances'
-    value: 4
+  filtered_vcf:
+    type: File
+    outputBinding:
+      glob: "$(inputs.input_gvcf.nameroot.replace('gvcf', 'vcf'))"
