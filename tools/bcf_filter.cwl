@@ -15,7 +15,7 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-        view -R $(inputs.SNP_list.path) $(inputs.input_gvcf.path) -i 'FORMAT/DP>=30' | bgzip > DF.$(inputs.input_gvcf.basename);
+        view -R $(inputs.SNP_list.path) $(inputs.input_gvcf.path) -i 'FORMAT/DP>=10' | bgzip > DF.$(inputs.input_gvcf.basename);
         tabix -p vcf DF.$(inputs.input_gvcf.basename);
         bcftools convert --gvcf2vcf -f $(inputs.reference_fasta.path) -R $(inputs.SNP_list.path) DF.$(inputs.input_gvcf.basename) -O v | bcftools sort -O v | bgzip > CONVERTED.$(inputs.input_gvcf.basename);
         tabix -p vcf CONVERTED.$(inputs.input_gvcf.basename);
