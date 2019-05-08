@@ -21,14 +21,21 @@ genes <- unique(c(df$Gene1, df$Gene2))
 to.check <- setdiff(genes, rna.mat$gene_short_name) # 90
 rna.mat <- rna.mat[which(rna.mat$gene_short_name %in% genes),]
 rna.mat <- melt(rna.mat)
+
+metadata<-read.delim("../../references/1555682641885-manifest.csv",stringsAsFactors = F,sep=",")
+rna.mat<-merge(rna.mat, metadata, by.x="variable",by.y="name")
+
 clin<-read.delim("../../references/CBTTC-broad-histologies\ -\ CBTTC-broad-hist.csv",stringsAsFactors = F,sep=",")
 clin<-unique(clin[,c("sample","broad.histology")])
-head(clin)
 clin$sample<-gsub("_.*","",clin$sample)
 colnames(clin)<-c("Sample","Histology.Broad")
 
-rna.mat <- merge(rna.mat, clin[,c("Sample","Histology.Broad")], by.x = 'variable', by.y = "Sample")
+head(rna.mat)
+head(clin)
+rna.mat <- merge(rna.mat, clin[,c("Sample","Histology.Broad")], by.x = 'sample_id', by.y = "Sample")
 rna.mat$Histology.Broad <- as.character(rna.mat$Histology.Broad)
+head(rna.mat)
+
 
 # now add filter
 df$Gene1_model <- NA
@@ -70,6 +77,8 @@ for(i in 1:nrow(df)){
 df[is.na(df)] <- NA
 df$Gene1_not_expressed[is.na(df$Gene1_not_expressed)] <- "Not Reported"
 df$Gene2_not_expressed[is.na(df$Gene2_not_expressed)] <- "Not Reported"
+write.table(df, file = paste0(basePD,'/data/processed/Gene_Fusions_exp.txt'), quote = F, sep = "\t", row.names = F)
+
 separate.fusions <- df[(df$Gene1_not_expressed %in% c(TRUE,"Not Reported") & df$Gene2_not_expressed %in% c(TRUE,"Not Reported")),]
 if(nrow(separate.fusions) > 0){
   print("Fusions to be separated")
@@ -79,7 +88,7 @@ if(nrow(separate.fusions) > 0){
 final <- final[which(final$Fused_Genes %in% df$Fused_Genes),]
 ####### separate low expressing fusions and fusions where gene expression not reported 
 
-write.table(separate.fusions, file = paste0(basePD,'/data/processed/Driver_Fusions.txt'), quote = F, sep = "\t", row.names = F)
+write.table(final, file = paste0(basePD,'/data/processed/Driver_Fusions.txt'), quote = F, sep = "\t", row.names = F)
 
 
 

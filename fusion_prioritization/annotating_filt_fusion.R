@@ -9,7 +9,8 @@ library(tidyr)
 basePD<-"/mnt/isilon/cbmi/variome/gaonkark/RNAseq_fusion/cbttc_gather_rna_fusion/opendipg"
 
 ####### separate low expressing fusions and fusions where gene expression not reported
-total<-read.delim(paste0(basePD,'/data/processed/Driver_Fusions.txt'), stringsAsFactors = F)
+total<-read.delim(paste0(basePD,'/data/processed/Gene_Fusions_exp.txt'), stringsAsFactors = F)
+
 
 head(total)
 
