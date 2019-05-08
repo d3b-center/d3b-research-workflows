@@ -5,27 +5,30 @@ library("plyr")
 basePD<-"/mnt/isilon/cbmi/variome/gaonkark/RNAseq_fusion/cbttc_gather_rna_fusion/opendipg"
 
 ####### separate low expressing fusions and fusions where gene expression not reported
-final<-readRDS(paste0(basePD,"/data/interim/fusion_all_list.rds"))
+final<-readRDS(paste0(basePD,"/data/interim/fusion_all_list_filt.rds"))
 #get Rdata for opendipg
 tximport_genes<-readRDS(paste0(basePD,"/data/interim/txi_rsem_all.rds"))
-rna.exp<-tximport_genes$abundance
-rna_exp_df<-as.data.frame(rna.exp)
-rna_exp_df$gene_short_name<-unlist(lapply(rownames(rna_exp_df),function(x) strsplit(as.character(x),"_")[[1]][2]))
-rna_exp_df$not_expressed <- apply(rna_exp_df, 1, FUN = function(x) all(x < 1))
+rna.mat<-tximport_genes$abundance
+rna.mat<-as.data.frame(rna.mat)
+rna.mat$gene_short_name<-unlist(lapply(rownames(rna.mat),function(x) strsplit(as.character(x),"_")[[1]][2]))
 
-df<-final
-df <- cbind(colsplit(df$FusionName, pattern = '--', names = c("Gene1","Gene2")), df)
+
+####### separate low expressing fusions and fusions where gene expression not reported
+rna.mat$not_expressed <- apply(rna.mat[,2:ncol(rna.mat)], 1, FUN = function(x) all(x < 1))
+df <- final
+df <- cbind(colsplit(df$Fused_Genes, pattern = '--', names = c("Gene1","Gene2")), df)
 genes <- unique(c(df$Gene1, df$Gene2))
-genes<-c(genes[-grep("/", genes)],unique(unlist(lapply(genes[grep("/", genes)],function(x) strsplit(x,"/")[[1]][1])),unlist(lapply(genes[grep("/", genes)],function(x) strsplit(x,"/")[[1]][2]))))
-genes<-c(genes[-grep("\\(", genes)], unlist(lapply(genes[grep("\\(", genes)],function(x) gsub("\\(.*\\)", "", x))))
-genes<-unique(genes)
-to.check <- setdiff(genes, rna_exp_df$gene_short_name) # 9
-rna_exp_df <- rna_exp_df[which(rna_exp_df$gene_short_name %in% genes),]
-rna_exp_df <- melt(rna_exp_df)
+to.check <- setdiff(genes, rna.mat$gene_short_name) # 90
+rna.mat <- rna.mat[which(rna.mat$gene_short_name %in% genes),]
+rna.mat <- melt(rna.mat)
+clin<-read.delim("../../references/CBTTC-broad-histologies\ -\ CBTTC-broad-hist.csv",stringsAsFactors = F,sep=",")
+clin<-unique(clin[,c("sample","broad.histology")])
+head(clin)
+clin$sample<-gsub("_.*","",clin$sample)
+colnames(clin)<-c("Sample","Histology.Broad")
 
-nrow(df)
-head(df)
-
+rna.mat <- merge(rna.mat, clin[,c("Sample","Histology.Broad")], by.x = 'variable', by.y = "Sample")
+rna.mat$Histology.Broad <- as.character(rna.mat$Histology.Broad)
 
 # now add filter
 df$Gene1_model <- NA
@@ -45,14 +48,14 @@ for(i in 1:nrow(df)){
   model <- df[i,'Model']
   hist <- df[i,'Histology.Broad']
   hist <- gsub(' [(].*','', hist)
-  genea.expr <- unique(rna_exp_df[which(rna_exp_df$gene_short_name == genea),'not_expressed'])
-  geneb.expr <- unique(rna_exp_df[which(rna_exp_df$gene_short_name == geneb),'not_expressed'])
-  genea.val <- rna_exp_df[which(rna_exp_df$variable %in% model & rna_exp_df$gene_short_name == genea),'value']
-  geneb.val <- rna_exp_df[which(rna_exp_df$variable %in% model & rna_exp_df$gene_short_name == geneb),'value']
-  genea.hist.mean <- mean(rna_exp_df[which(rna_exp_df$gene_short_name == genea & rna_exp_df$Histology.Broad == hist),'value'])
-  geneb.hist.mean <- mean(rna_exp_df[which(rna_exp_df$gene_short_name == geneb & rna_exp_df$Histology.Broad == hist),'value'])
-  genea.mean <- mean(rna_exp_df[which(rna_exp_df$gene_short_name == genea),'value'])
-  geneb.mean <- mean(rna_exp_df[which(rna_exp_df$gene_short_name == geneb),'value'])
+  genea.expr <- unique(rna.mat[which(rna.mat$gene_short_name == genea),'not_expressed'])
+  geneb.expr <- unique(rna.mat[which(rna.mat$gene_short_name == geneb),'not_expressed'])
+  genea.val <- rna.mat[which(rna.mat$variable %in% model & rna.mat$gene_short_name == genea),'value']
+  geneb.val <- rna.mat[which(rna.mat$variable %in% model & rna.mat$gene_short_name == geneb),'value']
+  genea.hist.mean <- mean(rna.mat[which(rna.mat$gene_short_name == genea & rna.mat$Histology.Broad == hist),'value'])
+  geneb.hist.mean <- mean(rna.mat[which(rna.mat$gene_short_name == geneb & rna.mat$Histology.Broad == hist),'value'])
+  genea.mean <- mean(rna.mat[which(rna.mat$gene_short_name == genea),'value'])
+  geneb.mean <- mean(rna.mat[which(rna.mat$gene_short_name == geneb),'value'])
   df[i,'Gene1_not_expressed'] <- ifelse(length(genea.expr) == 0, NA, genea.expr)
   df[i,'Gene1_model'] <- ifelse(is.na(genea.val) || length(genea.val) == 0, NA, genea.val)
   df[i,'Gene1_hist_mean'] <- ifelse(is.na(genea.hist.mean) || length(genea.hist.mean) == 0, NA, genea.hist.mean)
@@ -67,24 +70,17 @@ for(i in 1:nrow(df)){
 df[is.na(df)] <- NA
 df$Gene1_not_expressed[is.na(df$Gene1_not_expressed)] <- "Not Reported"
 df$Gene2_not_expressed[is.na(df$Gene2_not_expressed)] <- "Not Reported"
-print("after exp")
-head(df)
-
-####### separate low expressing fusions and fusions where gene expression not reported
 separate.fusions <- df[(df$Gene1_not_expressed %in% c(TRUE,"Not Reported") & df$Gene2_not_expressed %in% c(TRUE,"Not Reported")),]
-head(separate.fusions)
 if(nrow(separate.fusions) > 0){
   print("Fusions to be separated")
   write.table(separate.fusions, file = paste0(basePD,'/data/processed/Driver_Fusions_noExprReported.txt'), quote = F, sep = "\t", row.names = F)
-  df <- df[-which(df$FusionName %in% separate.fusions$FusionName),]
+  df <- df[-which(df$Fused_Genes %in% separate.fusions$Fused_Genes),]
 }
+final <- final[which(final$Fused_Genes %in% df$Fused_Genes),]
+####### separate low expressing fusions and fusions where gene expression not reported 
 
-final <- final[which(final$FusionName %in% df$FusionName),]
-head(final)
+write.table(separate.fusions, file = paste0(basePD,'/data/processed/Driver_Fusions.txt'), quote = F, sep = "\t", row.names = F)
 
-####### separate low expressing fusions and fusions where gene expression not reported
 
-#driver-fusions
-driver.fusions <- final[,c("FusionName","Sample","Caller","Fusion_Type")]
-write.table(driver.fusions, file = paste0(basePD,'/data/processed/DriverFusions.txt'), quote = F, sep = "\t", row.names = F)
+
 
