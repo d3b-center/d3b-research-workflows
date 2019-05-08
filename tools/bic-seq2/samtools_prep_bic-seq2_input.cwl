@@ -22,12 +22,9 @@ arguments:
 
       cat cmd_list.txt | xargs -P 8 -ICMD sh -c "CMD"
 
-      tar -xzf $(inputs.ref_chrs.path)
-
 inputs:
   input_align: {type: File, secondaryFiles: ['.crai']}
   reference: {type: File, secondaryFiles: [.fai]}
-  ref_chrs: {type: File, doc: "Tar gzipped per-chromosome fasta"}
   stype: {type: string, doc: "input file sample type is tumor or normal"}
   rlen: {type: int, doc: "Max read length allowed. Recommend max possible read len minus 1"}
 outputs:
@@ -35,8 +32,4 @@ outputs:
     type: File[]
     outputBinding:
       glob: '*.seq'
-  chr_fa:
-    type: File[]
-    outputBinding:
-      glob: "$(inputs.ref_chrs.nameroot.substring(-4))/*.fa"
 

@@ -20,11 +20,16 @@ arguments:
         grep -E "^chr$chrom\s+" $(inputs.interval_list.path) | cut -f 2,3 > chr$chrom.mappability.txt
       done
 
+      tar -xzf $(inputs.ref_chrs.path)
 inputs:
   interval_list: {type: File, doc: "Can be bed or gatk interval_list"}
+  ref_chrs: {type: File, doc: "Tar gzipped per-chromosome fasta"}
 outputs:
   map_file:
     type: File[]
     outputBinding:
       glob: '*.txt'
-
+  chr_fa:
+    type: File[]
+    outputBinding:
+      glob: "$(inputs.ref_chrs.nameroot.substring(0,(inputs.ref_chrs.nameroot.length-4)))/*.fa"

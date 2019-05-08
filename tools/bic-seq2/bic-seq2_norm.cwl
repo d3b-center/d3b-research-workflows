@@ -4,7 +4,7 @@ id: prep_bic-seq2_inputs
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'migbro/bic-seq2:0.7.2'
+    dockerPull: 'kfdrc/bic-seq2:0.7.2'
   - class: ResourceRequirement
     ramMin: 10000
     coresMin: 4
@@ -14,8 +14,8 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > config.txt && \
-      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.interval_list.path)\t$(inputs.seq_file.path)\t$inputs.chr_ref.nameroot).$(inputs.stype).bin" >> config.txt && \
+      -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > norm_config.txt && \
+      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$inputs.chr_ref.nameroot).$(inputs.stype).bin" >> config.txt && \
       perl /NBICseq-norm_v0.2.4/NBICseq-norm.pl
       --tmp TMP 
       -l $(inputs.rlen)
@@ -26,14 +26,17 @@ arguments:
 
 
 inputs:
-  input_align: {type: File, secondaryFiles: ['.crai']}
-  interval_list: {type: File, doc: "Can be bed or gatk interval_list"}
+  map_file: {type: File, doc: "TSV with star and end coords from a single chromosome"}
   chr_ref: {type: File, doc: "single chromosome fasta file"}
   stype: {type: string, doc: "input file sample type is tumor or normal"}
   rlen: {type: int, doc: "Max read length allowed. Recommend max possible read len minus 1"}
   seq_file: File
 outputs:
-  seq_file:
-    type: File[]
+  bin_file:
+    type: File
     outputBinding:
-      glob: '*.seq'
+      glob: '*.bin'
+  output_txt:
+    type: File
+    outputBinding:
+      glob: '*_output.txt'
