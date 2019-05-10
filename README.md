@@ -12,4 +12,8 @@ fusion_prioritization (modified from Komal Rathi's code https://github.com/maris
       6) filtering_exp_fusion_genes.R filter fusion calls if both genes are not expressed
       7) annotating_filt_fusion.R  Annotation from kinase, TF and COSMIC gene lists
       
-      Output : DriverFusions.txt
+      Output : 
+      Driver_Fusions.txt : Fused genes that pass filtering annotated with Broad Histologies
+      Gene_Fusions_exp.txt : Gene expression for geneA and geneB of fused genes
+      Filtered_Annotated_Fusions.txt : Annotation for filtered fusion calls if gene present in kinse DB, cosmic,TF DB
+      FusionPlot.pdf : box plots for fusion calls per broad histologies
