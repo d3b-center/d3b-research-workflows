@@ -1,6 +1,6 @@
 # d3b-research-workflows
 
-fusion_prioritization:
+fusion_prioritization (modified from Komal Rathi's code https://github.com/marislab/pptx-pdx-fusion-analysis):
       Requirement: folder structure from cookiecutter https://github.com/drivendata/cookiecutter-data-science
       Inputs: Downloaded manifest from cavatica project
       
