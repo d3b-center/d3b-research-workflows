@@ -1,13 +1,13 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: prep_bic-seq2_inputs
+id: bic-seq2_seg
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: 'kfdrc/bic-seq2:0.7.2'
   - class: ResourceRequirement
-    ramMin: 10000
-    coresMin: 4
+    ramMin: 4000
+    coresMin: 2
   - class: InlineJavascriptRequirement
 baseCommand: []
 arguments:
@@ -15,8 +15,8 @@ arguments:
     shellQuote: false
     valueFrom: >-
       export CHROM=$(inputs.case_bin.nameroot.split(".")[0]);
-      echo -e "chromName\tbinFileNorm.Case\tbinFileNorm.Control" > seg_config.txt &&
-      echo -e "$CHROM\t$(inputs.case_bin.path)\t$(inputs.control_bin.path)" >> seg_config.txt &&
+      echo "chromName\tbinFileNorm.Case\tbinFileNorm.Control" > seg_config.txt &&
+      echo "$CHROM\t$(inputs.case_bin.path)\t$(inputs.control_bin.path)" >> seg_config.txt &&
       perl /NBICseq-seg_v0.7.2/NBICseq-seg.pl
       --detail 
       --control

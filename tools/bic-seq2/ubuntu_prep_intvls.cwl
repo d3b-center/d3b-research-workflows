@@ -21,6 +21,8 @@ arguments:
       done
 
       tar -xzf $(inputs.ref_chrs.path)
+
+      rm $(inputs.ref_chrs.nameroot.substring(0,(inputs.ref_chrs.nameroot.length-4)))/chrM.fa
 inputs:
   interval_list: {type: File, doc: "Can be bed or gatk interval_list"}
   ref_chrs: {type: File, doc: "Tar gzipped per-chromosome fasta"}

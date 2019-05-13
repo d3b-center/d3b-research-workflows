@@ -62,10 +62,15 @@ steps:
     scatterMethod: dotproduct
     out: [bin_file, output_txt]
   bic-seq2_seg:
+    hints:
+      - class: 'sbg:AWSInstanceType'
+        value: c5.9xlarge;ebs-gp2;400
     run: ../../tools/bic-seq2/bic-seq2_seg.cwl
     in:
       case_bin: bic-seq2_normalize_tumor/bin_file
       control_bin: bic-seq2_normalize_normal/bin_file
+    scatter: [case_bin, control_bin]
+    scatterMethod: dotproduct
     out: [cnv_png, out_cnv]
   tar_per_chrom_results:
     run: ../../tools/bic-seq2/ubuntu_tar_results.cwl
@@ -85,4 +90,4 @@ $namespaces:
   sbg: https://sevenbridges.com
 hints:
   - class: 'sbg:maxNumberOfParallelInstances'
-    value: 2
+    value: 3

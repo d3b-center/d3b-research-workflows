@@ -1,13 +1,13 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: prep_bic-seq2_inputs
+id: bic-seq2_norm
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
     dockerPull: 'kfdrc/bic-seq2:0.7.2'
   - class: ResourceRequirement
-    ramMin: 10000
-    coresMin: 4
+    ramMin: 4000
+    coresMin: 2
   - class: InlineJavascriptRequirement
 baseCommand: []
 arguments:
@@ -15,8 +15,8 @@ arguments:
     shellQuote: false
     valueFrom: >-
       export CONFIG_FILE=norm_config.txt &&
-      echo -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > $CONFIG_FILE &&
-      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$(inputs.chr_ref.nameroot).$(inputs.stype).bin" >> $CONFIG_FILE &&
+      echo "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > $CONFIG_FILE &&
+      echo "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$(inputs.chr_ref.nameroot).$(inputs.stype).bin" >> $CONFIG_FILE &&
       perl /NBICseq-norm_v0.2.4/NBICseq-norm.pl
       --tmp TMP
       -l $(inputs.rlen)

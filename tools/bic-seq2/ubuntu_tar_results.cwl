@@ -1,6 +1,6 @@
 cwlVersion: v1.0
 class: CommandLineTool
-id: pre_map_files
+id: tar_results
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
@@ -16,12 +16,34 @@ arguments:
     valueFrom: >-
       set -eo pipefail
       
-      tar -czf $(inputs.output_basename).tumor_txt_results.tar.gz $(inputs.tumor_txt_results.dirname) && \
-      tar -czf $(inputs.output_basename).normal_txt_results.tar.gz $(inputs.normal_txt_results.dirname) && \
-      tar -czf $(inputs.output_basename).tumor_bin_results.tar.gz $(inputs.tumor_bin_results.dirname) && \
-      tar -czf $(inputs.output_basename).normal_bin_results.tar.gz $(inputs.normal_bin_results.dirname) && \
-      tar -czf $(inputs.output_basename).png_results.tar.gz $(inputs.png_results.dirname) && \
-      tar -czf $(inputs.output_basename).cnv_results.tar.gz $(inputs.cnv_results.dirname)
+      ${
+        var base_cmd = "tar -czf " + inputs.output_basename;
+        var cmd_str = base_cmd + ".tumor_txt_results.tar.gz";
+        for (var file_obj in inputs.tumor_txt_results){
+          cmd_str += " " + file_obj.path;
+        }
+        cmd_str += " && " + base_cmd + ".normal_txt_results.tar.gz";
+        for (var file_obj in inputs.normal_txt_results){
+          cmd_str += " " + file_obj.path;
+        }
+        cmd_str += " && " + base_cmd + ".tumor_bin_results.tar.gz";
+        for (var file_obj in inputs.tumor_bin_results){
+          cmd_str += " " + file_obj.path;
+        }
+        cmd_str += " && " + base_cmd + ".normal_bin_results.tar.gz";
+        for (var file_obj in inputs.normal_bin_results){
+          cmd_str += " " + file_obj.path;
+        }
+        cmd_str += " && " + base_cmd + ".png_results.tar.gz";
+        for (var file_obj in inputs.png_results){
+          cmd_str += " " + file_obj.path;
+        }
+        cmd_str += " && " + base_cmd + ".cnv_results.tar.gz";
+        for (var file_obj in inputs.cnv_results){
+          cmd_str += " " + file_obj.path;
+        }
+        return cmd_str;
+      }
       
 inputs:
   tumor_txt_results: File[]
