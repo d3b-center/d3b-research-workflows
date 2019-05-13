@@ -4,6 +4,7 @@ id: kfdrc_bic-seq2_workflow
 requirements:
   - class: ScatterFeatureRequirement
   - class: MultipleInputFeatureRequirement
+  - class: SubworkflowFeatureRequirement
 
 inputs:
   input_tumor_align: {type: File, secondaryFiles: ['.crai']}
@@ -20,44 +21,28 @@ outputs:
   tar_per_chrom_results/per_chrom_normal_bin, 
   tar_per_chrom_results/per_chrom_png, tar_per_chrom_results/per_chrom_cnv]}
 steps:
-  samtools_prep_tumor_inputs:
-    run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
+  prep_input_subwf:
+    run: ./kfdrc_input_prep_subwf.cwl
     in:
-        input_align: input_tumor_align
-        reference: reference
-        ref_chrs: ref_chrs
-        stype:
-          valueFrom: ${return "tumor"}
-        rlen: rlen
-    out: [seq_file]
-  samtools_prep_normal_inputs:
-    run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
-    in:
-        input_align: input_normal_align
-        reference: reference
-        ref_chrs: ref_chrs
-        stype:
-          valueFrom: ${return "normal"}
-        rlen: rlen
-    out: [seq_file]
-  ubuntu_prep_intervals:
-    run: ../../tools/bic-seq2/ubuntu_prep_intvls.cwl
-    in:
-      interval_list: interval_list
+      input_tumor_align: input_tumor_align
+      input_normal_align: input_normal_align
+      reference: reference
       ref_chrs: ref_chrs
-    out: [map_file, chr_fa]
+      rlen: rlen
+      interval_list: interval_list
+    out: [tumor_seq, normal_seq, map_file, chr_fa]
   bic-seq2_normalize_tumor:
     hints:
       - class: 'sbg:AWSInstanceType'
         value: c5.9xlarge;ebs-gp2;400
     run: ../../tools/bic-seq2/bic-seq2_norm.cwl
     in:
-      map_file: ubuntu_prep_intervals/map_file
-      chr_ref: ubuntu_prep_intervals/chr_fa
+      map_file: prep_input_subwf/map_file
+      chr_ref: prep_input_subwf/chr_fa
       stype:
         valueFrom: ${return "tumor"}
       rlen: rlen
-      seq_file: samtools_prep_tumor_inputs/seq_file
+      seq_file: prep_input_subwf/tumor_seq
       scatter: [map_file, chr_ref, seq_file]
       scatterMethod: dotproduct
     out: [bin_file, output_txt]
@@ -67,12 +52,12 @@ steps:
         value: c5.9xlarge;ebs-gp2;400
     run: ../../tools/bic-seq2/bic-seq2_norm.cwl
     in:
-      map_file: ubuntu_prep_intervals/map_file
-      chr_ref: ubuntu_prep_intervals/chr_fa
+      map_file: prep_input_subwf/map_file
+      chr_ref: prep_input_subwf/chr_fa
       stype:
         valueFrom: ${return "normal"}
       rlen: rlen
-      seq_file: samtools_prep_normal_inputs/seq_file
+      seq_file: prep_input_subwf/normal_seq
       scatter: [map_file, chr_ref, seq_file]
       scatterMethod: dotproduct
     out: [bin_file, output_txt]
