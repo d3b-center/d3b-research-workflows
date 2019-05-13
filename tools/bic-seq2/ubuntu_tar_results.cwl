@@ -43,11 +43,11 @@ outputs:
   per_chrom_tumor_bin:
     type: File
     outputBinding:
-    glob: '*.tumor_bin_results.tar.gz'
+      glob: '*.tumor_bin_results.tar.gz'
   per_chrom_normal_bin:
     type: File
     outputBinding:
-    glob: '*.normal_bin_results.tar.gz'
+      glob: '*.normal_bin_results.tar.gz'
   per_chrom_png:
     type: File
     outputBinding:

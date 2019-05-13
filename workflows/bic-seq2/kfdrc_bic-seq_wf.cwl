@@ -43,8 +43,8 @@ steps:
         valueFrom: ${return "tumor"}
       rlen: rlen
       seq_file: prep_input_subwf/tumor_seq
-      scatter: [map_file, chr_ref, seq_file]
-      scatterMethod: dotproduct
+    scatter: [map_file, chr_ref, seq_file]
+    scatterMethod: dotproduct
     out: [bin_file, output_txt]
   bic-seq2_normalize_normal:
     hints:
@@ -58,8 +58,8 @@ steps:
         valueFrom: ${return "normal"}
       rlen: rlen
       seq_file: prep_input_subwf/normal_seq
-      scatter: [map_file, chr_ref, seq_file]
-      scatterMethod: dotproduct
+    scatter: [map_file, chr_ref, seq_file]
+    scatterMethod: dotproduct
     out: [bin_file, output_txt]
   bic-seq2_seg:
     run: ../../tools/bic-seq2/bic-seq2_seg.cwl

@@ -22,22 +22,20 @@ steps:
   samtools_prep_tumor_inputs:
     run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
     in:
-        input_align: input_tumor_align
-        reference: reference
-        ref_chrs: ref_chrs
-        stype:
-          valueFrom: ${return "tumor"}
-        rlen: rlen
+      input_align: input_tumor_align
+      reference: reference
+      stype:
+        valueFrom: ${return "tumor"}
+      rlen: rlen
     out: [seq_file]
   samtools_prep_normal_inputs:
     run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
     in:
-        input_align: input_normal_align
-        reference: reference
-        ref_chrs: ref_chrs
-        stype:
-          valueFrom: ${return "normal"}
-        rlen: rlen
+      input_align: input_normal_align
+      reference: reference
+      stype:
+        valueFrom: ${return "normal"}
+      rlen: rlen
     out: [seq_file]
   ubuntu_prep_intervals:
     run: ../../tools/bic-seq2/ubuntu_prep_intvls.cwl
