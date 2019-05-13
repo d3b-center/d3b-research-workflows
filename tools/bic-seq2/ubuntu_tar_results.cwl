@@ -19,29 +19,29 @@ arguments:
       ${
         var base_cmd = "tar -czf " + inputs.output_basename;
         var cmd_str = base_cmd + ".tumor_txt_results.tar.gz";
-        for (var file_obj in inputs.tumor_txt_results){
+        inputs.tumor_txt_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         cmd_str += " && " + base_cmd + ".normal_txt_results.tar.gz";
-        for (var file_obj in inputs.normal_txt_results){
+        inputs.normal_txt_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         cmd_str += " && " + base_cmd + ".tumor_bin_results.tar.gz";
-        for (var file_obj in inputs.tumor_bin_results){
+        inputs.tumor_bin_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         cmd_str += " && " + base_cmd + ".normal_bin_results.tar.gz";
-        for (var file_obj in inputs.normal_bin_results){
+        inputs.normal_bin_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         cmd_str += " && " + base_cmd + ".png_results.tar.gz";
-        for (var file_obj in inputs.png_results){
+        inputs.png_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         cmd_str += " && " + base_cmd + ".cnv_results.tar.gz";
-        for (var file_obj in inputs.cnv_results){
+        inputs.cnv_results.forEach(function(file_obj){
           cmd_str += " " + file_obj.path;
-        }
+        });
         return cmd_str;
       }
       
