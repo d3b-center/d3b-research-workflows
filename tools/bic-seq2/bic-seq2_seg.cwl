@@ -14,9 +14,9 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      export CHROM=$(inputs.case_bin.nameroot.split(".")[0])
-      echo -e "chromName\tbinFileNorm.Case\tbinFileNorm.Control" > seg_config.txt && \
-      echo -e "$CHROM\t$(inputs.case_bin.path)\t$(inputs.control_bin.path)" >> seg_config.txt && \
+      export CHROM=$(inputs.case_bin.nameroot.split(".")[0]);
+      echo -e "chromName\tbinFileNorm.Case\tbinFileNorm.Control" > seg_config.txt &&
+      echo -e "$CHROM\t$(inputs.case_bin.path)\t$(inputs.control_bin.path)" >> seg_config.txt &&
       perl /NBICseq-seg_v0.7.2/NBICseq-seg.pl
       --detail 
       --control

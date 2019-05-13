@@ -3,6 +3,7 @@ class: Workflow
 id: kfdrc_bic-seq2_workflow
 requirements:
   - class: ScatterFeatureRequirement
+  - class: MultipleInputFeatureRequirement
 
 inputs:
   input_tumor_align: {type: File, secondaryFiles: ['.crai']}

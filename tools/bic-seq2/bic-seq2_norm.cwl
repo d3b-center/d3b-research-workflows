@@ -14,8 +14,8 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > norm_config.txt && \
-      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$inputs.chr_ref.nameroot).$(inputs.stype).bin" >> config.txt && \
+      -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > norm_config.txt &&
+      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$inputs.chr_ref.nameroot).$(inputs.stype).bin" >> config.txt &&
       perl /NBICseq-norm_v0.2.4/NBICseq-norm.pl
       --tmp TMP 
       -l $(inputs.rlen)
