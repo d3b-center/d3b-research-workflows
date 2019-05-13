@@ -9,19 +9,20 @@ requirements:
     ramMin: 10000
     coresMin: 4
   - class: InlineJavascriptRequirement
-baseCommand: [echo]
+baseCommand: []
 arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > norm_config.txt &&
-      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$inputs.chr_ref.nameroot).$(inputs.stype).bin" >> config.txt &&
+      export CONFIG_FILE=norm_config.txt &&
+      echo -e "chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm" > $CONFIG_FILE &&
+      echo -e "$(inputs.chr_ref.nameroot)\t$(inputs.chr_ref.path)\t$(inputs.map_file.path)\t$(inputs.seq_file.path)\t$(inputs.chr_ref.nameroot).$(inputs.stype).bin" >> $CONFIG_FILE &&
       perl /NBICseq-norm_v0.2.4/NBICseq-norm.pl
-      --tmp TMP 
+      --tmp TMP
       -l $(inputs.rlen)
       -s 350
       -b 100
-      config.txt
+      $CONFIG_FILE
       $(inputs.chr_ref.nameroot).$(inputs.stype)_output.txt
 
 
