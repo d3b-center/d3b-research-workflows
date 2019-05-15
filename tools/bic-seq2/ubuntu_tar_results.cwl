@@ -17,65 +17,30 @@ arguments:
       set -eo pipefail
       
       ${
-        var base_cmd = "tar -czf " + inputs.output_basename;
-        var cmd_str = base_cmd + ".tumor_txt_results.tar.gz";
-        inputs.tumor_txt_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
-        });
-        cmd_str += " && " + base_cmd + ".normal_txt_results.tar.gz";
-        inputs.normal_txt_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
-        });
-        cmd_str += " && " + base_cmd + ".tumor_bin_results.tar.gz";
-        inputs.tumor_bin_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
-        });
-        cmd_str += " && " + base_cmd + ".normal_bin_results.tar.gz";
-        inputs.normal_bin_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
-        });
-        cmd_str += " && " + base_cmd + ".png_results.tar.gz";
+        var tar_cmd = "tar -czf " + inputs.output_basename;
+        var cmd_str = "mkdir png_results && ";
         inputs.png_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
+          cmd_str += "cp " + file_obj.path + " png_results/" + inputs.output_basename + "." + file_obj.basename + " && ";
         });
-        cmd_str += " && " + base_cmd + ".cnv_results.tar.gz";
+        cmd_str += tar_cmd + ".png_results.tar.gz png_results && ";
+        cmd_str += " echo \"chrom\tstart\tend\tbinNum\ttumor\ttumor_expect\tnormal\tnormal_expect\tlog2.copyRatio\tlog2.TumorExpectRatio\" > " + inputs.output_basename + ".CNV";
         inputs.cnv_results.forEach(function(file_obj){
-          cmd_str += " " + file_obj.path;
+          cmd_str += " && cat " + file_obj.path + " grep -v chrom >> " + inputs.output_basename + ".merged.CNV";
         });
         return cmd_str;
       }
       
 inputs:
-  tumor_txt_results: File[]
-  normal_txt_results: File[]
-  tumor_bin_results: File[]
-  normal_bin_results: File[]
   png_results: File[]
   cnv_results: File[]
   output_basename: string
 outputs:
-  per_chrom_tumor_txt:
-    type: File
-    outputBinding:
-      glob: '*.tumor_txt_results.tar.gz'
-  per_chrom_normal_txt:
-    type: File
-    outputBinding:
-      glob: '*.normal_txt_results.tar.gz'
-  per_chrom_tumor_bin:
-    type: File
-    outputBinding:
-      glob: '*.tumor_bin_results.tar.gz'
-  per_chrom_normal_bin:
-    type: File
-    outputBinding:
-      glob: '*.normal_bin_results.tar.gz'
   per_chrom_png:
     type: File
     outputBinding:
       glob: '*.png_results.tar.gz'
-  per_chrom_cnv:
+  merged_chrom_cnv:
     type: File
     outputBinding:
-      glob: '*.cnv_results.tar.gz'
+      glob: '*.merged.CNV'
 

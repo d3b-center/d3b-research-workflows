@@ -21,6 +21,8 @@ arguments:
       --detail 
       --control
       --fig $CHROM.png
+      --noscale
+      --lambda=3
       seg_config.txt
       $CHROM.CNV
 

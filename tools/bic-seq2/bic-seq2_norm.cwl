@@ -25,7 +25,6 @@ arguments:
       $CONFIG_FILE
       $(inputs.chr_ref.nameroot).$(inputs.stype)_output.txt
 
-
 inputs:
   map_file: {type: File, doc: "TSV with star and end coords from a single chromosome"}
   chr_ref: {type: File, doc: "single chromosome fasta file"}
@@ -41,3 +40,8 @@ outputs:
     type: File
     outputBinding:
       glob: '*_output.txt'
+  pdf_fig:
+    type: File
+    outputBinding:
+      glob: '*.pdf'
+

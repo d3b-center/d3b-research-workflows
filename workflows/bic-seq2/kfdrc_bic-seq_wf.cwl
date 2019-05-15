@@ -16,10 +16,8 @@ inputs:
   output_basename: string
 
 outputs:
-  per_chrom_results: {type: 'File[]', outputSource: [tar_per_chrom_results/per_chrom_tumor_txt, 
-  tar_per_chrom_results/per_chrom_normal_txt, tar_per_chrom_results/per_chrom_tumor_bin,
-  tar_per_chrom_results/per_chrom_normal_bin, 
-  tar_per_chrom_results/per_chrom_png, tar_per_chrom_results/per_chrom_cnv]}
+  per_chrom_png {type: File, outputSource: tar_per_chrom_results/per_chrom_png}
+  merge_cnv_results: {type: File, outputSource: tar_per_chrom_results/merged_chrom_cnv}
 steps:
   prep_input_subwf:
     run: ./kfdrc_input_prep_subwf.cwl
@@ -76,14 +74,10 @@ steps:
     run: ../../tools/bic-seq2/ubuntu_tar_results.cwl
     in:
       output_basename: output_basename
-      tumor_txt_results: bic-seq2_normalize_tumor/output_txt
-      normal_txt_results: bic-seq2_normalize_normal/output_txt
-      tumor_bin_results: bic-seq2_normalize_tumor/bin_file
-      normal_bin_results: bic-seq2_normalize_normal/bin_file
       png_results: bic-seq2_seg/cnv_png
       cnv_results: bic-seq2_seg/out_cnv
     out:
-      [per_chrom_tumor_txt, per_chrom_normal_txt, per_chrom_tumor_bin, per_chrom_normal_bin, per_chrom_png, per_chrom_cnv]
+      [per_chrom_png, merged_chrom_cnv]
 
 
 $namespaces:
