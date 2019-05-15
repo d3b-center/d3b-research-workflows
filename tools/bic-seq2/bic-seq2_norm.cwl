@@ -36,12 +36,3 @@ outputs:
     type: File
     outputBinding:
       glob: '*.bin'
-  output_txt:
-    type: File
-    outputBinding:
-      glob: '*_output.txt'
-  pdf_fig:
-    type: File
-    outputBinding:
-      glob: '*.pdf'
-

@@ -16,7 +16,7 @@ inputs:
   output_basename: string
 
 outputs:
-  per_chrom_png {type: File, outputSource: tar_per_chrom_results/per_chrom_png}
+  per_chrom_png: {type: File, outputSource: tar_per_chrom_results/per_chrom_png}
   merge_cnv_results: {type: File, outputSource: tar_per_chrom_results/merged_chrom_cnv}
 steps:
   prep_input_subwf:
@@ -43,7 +43,7 @@ steps:
       seq_file: prep_input_subwf/tumor_seq
     scatter: [map_file, chr_ref, seq_file]
     scatterMethod: dotproduct
-    out: [bin_file, output_txt]
+    out: [bin_file]
   bic-seq2_normalize_normal:
     hints:
       - class: 'sbg:AWSInstanceType'
@@ -58,7 +58,7 @@ steps:
       seq_file: prep_input_subwf/normal_seq
     scatter: [map_file, chr_ref, seq_file]
     scatterMethod: dotproduct
-    out: [bin_file, output_txt]
+    out: [bin_file]
   bic-seq2_seg:
     hints:
       - class: 'sbg:AWSInstanceType'
