@@ -4,7 +4,7 @@ id: prep_bic-seq2_inputs
 requirements:
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'kfdrc/samtools:1.9'
+    dockerPull: 'kfdrc/bic-seq2:0.7.2'
   - class: ResourceRequirement
     ramMin: 10000
     coresMin: 16
@@ -17,7 +17,7 @@ arguments:
       set -eo pipefail
 
       for chrom in `seq 1 22` X Y; do
-        echo "samtools view -@ 2 -T $(inputs.reference.path) -m $(inputs.rlen) $(inputs.input_align.path) chr$chrom | cut -f 4 > chr$chrom.$(inputs.stype).seq;" >> cmd_list.txt
+        echo "samtools view -@ 2 -T $(inputs.reference.path) -m $(inputs.rlen) $(inputs.input_align.path) chr$chrom | perl /samtools-0.1.7a_getUnique-0.1.3/misc/samtools.pl unique - | cut -f 4 > chr$chrom.$(inputs.stype).seq;" >> cmd_list.txt
       done
 
       cat cmd_list.txt | xargs -P 8 -ICMD sh -c "CMD"

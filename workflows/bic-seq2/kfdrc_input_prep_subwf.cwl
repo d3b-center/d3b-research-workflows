@@ -14,13 +14,13 @@ inputs:
   interval_list: {type: File, doc: "Can be bed or gatk interval_list"}
 
 outputs:
-  tumor_seq: {type: 'File[]', outputSource: samtools_prep_tumor_inputs/seq_file}
-  normal_seq: {type: 'File[]', outputSource: samtools_prep_normal_inputs/seq_file}
+  tumor_seq: {type: 'File[]', outputSource: bic-seq2_prep_tumor_inputs/seq_file}
+  normal_seq: {type: 'File[]', outputSource: bic-seq2_prep_normal_inputs/seq_file}
   map_file: {type: 'File[]', outputSource: ubuntu_prep_intervals/map_file}
   chr_fa: {type: 'File[]', outputSource: ubuntu_prep_intervals/chr_fa}
 steps:
-  samtools_prep_tumor_inputs:
-    run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
+  bic-seq2_prep_tumor_inputs:
+    run: ../../tools/bic-seq2/bic-seq2_prep_input.cwl
     in:
       input_align: input_tumor_align
       reference: reference
@@ -28,8 +28,8 @@ steps:
         valueFrom: ${return "tumor"}
       rlen: rlen
     out: [seq_file]
-  samtools_prep_normal_inputs:
-    run: ../../tools/bic-seq2/samtools_prep_bic-seq2_input.cwl
+  bic-seq2_prep_normal_inputs:
+    run: ../../tools/bic-seq2/bic-seq2_prep_input.cwl
     in:
       input_align: input_normal_align
       reference: reference
