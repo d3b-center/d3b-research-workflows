@@ -18,11 +18,12 @@ arguments:
       
       ${
         var tar_cmd = "tar -czf " + inputs.output_basename;
-        var cmd_str = "mkdir png_results && ";
+        var png_dir = inputs.output_basename + "_png_results/";
+        var cmd_str = "mkdir " + png_dir + " && ";
         inputs.png_results.forEach(function(file_obj){
-          cmd_str += "cp " + file_obj.path + " png_results/" + inputs.output_basename + "." + file_obj.basename + " && ";
+          cmd_str += "cp " + file_obj.path + " " + png_dir + inputs.output_basename + "." + file_obj.basename + " && ";
         });
-        cmd_str += tar_cmd + ".png_results.tar.gz png_results && ";
+        cmd_str += tar_cmd + ".png_results.tar.gz " + png_dir + " && ";
         cmd_str += " echo \"chrom\tstart\tend\tbinNum\ttumor\ttumor_expect\tnormal\tnormal_expect\tlog2.copyRatio\tlog2.TumorExpectRatio\" > " + inputs.output_basename + ".merged.CNV";
         inputs.cnv_results.forEach(function(file_obj){
           cmd_str += " && cat " + file_obj.path + " | grep -v chrom >> " + inputs.output_basename + ".merged.CNV";
