@@ -23,6 +23,7 @@ arguments:
       --fig $CHROM.png
       --noscale
       --lambda=3
+      --tmp ./TMP
       seg_config.txt
       $CHROM.CNV
 
