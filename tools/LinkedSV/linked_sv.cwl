@@ -6,8 +6,8 @@ requirements:
   - class: DockerRequirement
     dockerPull: 'migbro/linkedsv:latest'
   - class: ResourceRequirement
-    ramMin: 36000
-    coresMin: 16
+    ramMin: 120000
+    coresMin: 30
   - class: InlineJavascriptRequirement
 baseCommand: [python]
 arguments:
@@ -18,42 +18,42 @@ arguments:
       -i $(inputs.bam.path)
       -d $(inputs.output_basename)
       -r $(inputs.ref.path)
-      -t 16
+      -t 30
       ${
           var added_cmd = " --" + inputs.detect_mode
-          if (typeof inputs.ref_version !== 'undefined' || inputs.ref_version !== null){
-              added_cmd += " --ref_version " + inputs.ref_version.path;
+          if (inputs.ref_version !== null){
+              added_cmd += " --ref_version " + inputs.ref_version;
           }
-          if (typeof inputs.gap_region_bed !== 'undefined' || inputs.gap_region_bed !== null){
+          if (inputs.gap_region_bed !== null){
               added_cmd += " --gap_region_bed " + inputs.gap_region_bed.path;
           }
-          if (typeof inputs.black_region_bed !== 'undefined' || inputs.black_region_bed !== null){
+          if (inputs.black_region_bed !== null){
               added_cmd += " --black_region_bed " + inputs.black_region_bed.path;
           }
-          if (typeof inputs.target_region !== 'undefined' || inputs.target_region !== null){
+          if (inputs.target_region !== null){
               added_cmd += " --target_region " + inputs.target_region.path;
           }
-          if (typeof inputs.min_fragment_length !== 'undefined' || inputs.min_fragment_length !== null){
+          if (inputs.min_fragment_length !== null){
               added_cmd += " --min_fragment_length " + inputs.min_fragment_length;
           }
-          if (typeof inputs.min_reads_in_fragment !== 'undefined' || inputs.min_reads_in_fragment !== null){
+          if (inputs.min_reads_in_fragment !== null){
               added_cmd += " --min_reads_in_fragment " + inputs.min_reads_in_fragment;
           }
-          if (typeof inputs.input_type !== 'undefined' || inputs.input_type !== null){
+          if (inputs.input_type !== null){
               added_cmd += " --" + inputs.input_type;
           }
-          if (typeof inputs.ap_distance_cut_off !== 'undefined' || inputs.ap_distance_cut_off !== null){
+          if (inputs.ap_distance_cut_off !== null){
               added_cmd += " --ap_distance_cut_off " + inputs.ap_distance_cut_off;
           }
           return added_cmd;
       }
 
-      tar -czf $(inputs.output_basename).tar.gz
+      tar -czf $(inputs.output_basename).tar.gz $(inputs.output_basename)
 
 inputs:
   output_basename: string
   bam: {type: File, doc: "phased_possorted_bam.bam"}
-  ref: {type: File, doc: "reference FASTA file"}
+  ref: {type: File, secondaryFiles: [.fai], doc: "reference FASTA file"}
   ref_version: {type: ['null', string], doc: "version of reference fasta file. Current supported versions are: hg19, b37, hg38"}
   detect_mode: {type: string, doc: "detection mode, accepted values are germline_mode, somatic_mode"}
   input_type: {type: ['null', string], doc: "accepted values wgs, targeted"}
