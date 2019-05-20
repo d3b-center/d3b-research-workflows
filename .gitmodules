@@ -1,0 +1,3 @@
+[submodule "LinkedSV"]
+	path = LinkedSV
+	url = https://github.com/d3b-center/LinkedSV
