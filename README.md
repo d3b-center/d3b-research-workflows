@@ -13,3 +13,8 @@ fusion_prioritization:
       
       Output : DriverFusions.txt
 
+## d3b_bic-seq2
+CWL implementation of BIC-SEQ2 CNV pipeline.
+
+## Linked-SV
+CWL implementation of Linked-SV structural variant using long reads caller.
