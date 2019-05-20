@@ -1,0 +1,6 @@
+[submodule "LinkedSV"]
+	path = LinkedSV
+	url = https://github.com/d3b-center/LinkedSV
+[submodule "d3b_bic-seq2"]
+	path = d3b_bic-seq2
+	url = https://github.com/d3b-center/d3b_bic-seq2
