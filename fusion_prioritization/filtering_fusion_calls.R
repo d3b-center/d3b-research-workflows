@@ -11,7 +11,7 @@ library(tidyr)
 basePD<-"/mnt/isilon/cbmi/variome/gaonkark/RNAseq_fusion/cbttc_gather_rna_fusion/opendipg"
 
 # star fusion
-sf <- data.table::fread(paste0(basePD,"/data/interim/STAR_fusion.tsv"), stringsAsFactors = F,sep="\t")
+sf <- data.table::fread(paste0(basePD,"/data/interim/star_fusion.tsv"), stringsAsFactors = F,sep="\t")
 sf$LeftBreakpoint <- gsub('^chr','',sf$LeftBreakpoint)
 sf$RightBreakpoint <- gsub('^chr','',sf$RightBreakpoint)
 colnames(sf)[c(6,8)] <- c('Gene1_pos','Gene2_pos')
@@ -34,6 +34,7 @@ ar$FusionName <-paste0(gsub(",","/",ar$X.gene1),"--",gsub(",","/",ar$gene2))
 ar.total <- unique(ar[,c('FusionName','Sample','Caller','Fusion_Type')])
 
 
+
 #pizzly
 
 #pz <- data.table::fread(paste0(basePD,"/data/interim/pizzly_fusion.tsv"), stringsAsFactors = F,sep="\t")
@@ -49,40 +50,85 @@ ar.total <- unique(ar[,c('FusionName','Sample','Caller','Fusion_Type')])
 sf.rt <- unique(sf[grep('readthrough|neighbors|GTEx_Recurrent',sf$annots),'FusionName'])
 #https://arriba.readthedocs.io/en/latest/interpretation-of-results/#frequent-types-of-false-positives
 #not filtered for pcr_fusions
-ar.rt <- unique(ar[grep("read-through",ar$type),'FusionName'])
+ar.rt <- unique(ar[grep("read-through|non-canonical_splicing",ar$type),'FusionName'])
 rts <- unique(c(sf.rt$FusionName, ar.rt$FusionName))
 rts.rev <- unique(unlist(lapply(strsplit(rts, '--'), FUN = function(x) paste0(x[2],'--',x[1]))))
 rts <- unique(c(rts, rts.rev))
+
+
 
 #all.callers <- rbind(ar.total, sf.total, pz.total)
 all.callers<-rbind(ar.total, sf.total)
 
 
-# remove read-throughs
-final <- all.callers[-which(all.callers$FusionName %in% rts),]
-saveRDS(final,paste0(basePD,"/data/interim/fusion_all_list.rds"))
-all.callers<-final
 
 #histology
-clin<-read.delim("../../references/CBTTC-broad-histologies\ -\ CBTTC-broad-hist.csv",stringsAsFactors = F,sep=",")
-clin$sample<-gsub("_.*","",clin$sample)
+clin<-read.delim("../../references/CBTTC-broad-histologies\ -\ CBTTC-broad-hist_sample.csv",stringsAsFactors = F,sep="\t")
+
+clin<-unique(clin[,c("sample","diagnosis","short.histology","broad.histology","composition")])
 
 head(clin)
+head(all.callers)
+
 
 #merge callers and clinical information
 all.callers<-merge(all.callers, clin, by.x="Sample", by.y="sample")
 
 all.callers <- unique(all.callers[,c('Sample','FusionName','Caller','Fusion_Type','broad.histology')])
-to.add <- all.callers[,c('Sample','FusionName','Caller','Fusion_Type')] # for final annotation
 colnames(all.callers)<-c("Sample","Fused_Genes","Caller","Fusion_Type","Histology.Broad")
+final<-all.callers
 
 
+#driver fusions from Literature Jo Lynne
+lit.genes <- read.delim('../../references/driver-fusions-v2.txt', stringsAsFactors = F)
+lit.genes <- lit.genes[!is.na(lit.genes$FusionPartner),]
+head(all.callers)
+for(i in 1:nrow(lit.genes)){
+  genes.to.search <- lit.genes[i,2]
+  fusions.to.search <- lit.genes[i,3]
+  genes.to.search <- unlist(strsplit(genes.to.search, ','))
+  genes.to.search <- c(paste0('^',genes.to.search,'-'), paste0('-',genes.to.search,'$'))
+  if(fusions.to.search == ""){
+    print("no fusions to check")
+  } else {
+    fusions.to.search <- paste0('^',fusions.to.search,'$')
+    genes.to.search <- c(genes.to.search, fusions.to.search)
+  }
+  genes.to.search <- paste0(genes.to.search, collapse = '|')
+  hist.to.search <- lit.genes[i,1]
+  getfusions <- all.callers[grep(genes.to.search, all.callers$Fused_Genes),]
+  getfusions <- getfusions[which(getfusions$Histology.Broad %in% hist.to.search),]
+  getfusions <- unique(getfusions)
+  if(nrow(getfusions) == 0){
+    print(hist.to.search)
+    print(genes.to.search)
+  }
+  if(i == 1){
+    to.add <- getfusions
+  } else {
+    to.add <- rbind(to.add, getfusions)
+  }
+}
+to.add <- unique(to.add)
+colnames(to.add) <- colnames(all.callers)
+print("Literature gene fusions")
+to.add
+
+
+# merge the three lists
+final <- rbind(all.callers, to.add)
+final <- unique(final)
+
+# remove read-throughs
+final <- final[-which(final$Fused_Genes %in% rts),]
+saveRDS(final,paste0(basePD,"/data/interim/fusion_all_list.rds"))
+all.callers<-final
 
 # Gene fusion should be in-frame
 # Called by at least 2 callers
 all.callers.summary <- all.callers %>% 
   filter(Fusion_Type != "Other") %>%
-  group_by(Fused_Genes, Sample, Histology.Broad) %>% 
+  group_by(Fused_Genes, Sample, Histology.Broad ) %>% 
   unique() %>%
   mutate(Caller = toString(Caller), caller.count = n()) %>%
   filter(caller.count >= 2) %>% 
@@ -90,8 +136,11 @@ all.callers.summary <- all.callers %>%
   unique() %>%
   as.data.frame()
 
+print("caller count")
+head(all.callers.summary)
 
-# or found in at least 2 samples of the same histology (n = 539)
+
+# or found in at least 2 samples of the same histology 
 sample.count <- all.callers %>% 
   filter(Fusion_Type != "Other") %>%
   group_by(Fused_Genes, Histology.Broad) %>% 
@@ -121,11 +170,12 @@ rec2 <- unique(rec2[,c("Sample","Fused_Genes","Histology.Broad")])
 rec3 <- unique(rec3[,c("Sample","Fused_Genes","Histology.Broad")])
 res <- unique(rbind(rec2, rec3))
 
-# merge these (n = 6169)
+# merge these 
 total <- unique(rbind(all.callers.summary, sample.count, res))
+print("total number of calls")
 nrow(total)
 
-# remove fusions that are in > 1 histology (n = 1159)
+# remove fusions that are in > 1 histology 
 hist.count <- total %>% 
   select(Fused_Genes, Histology.Broad) %>%
   unique() %>%
@@ -134,5 +184,14 @@ hist.count <- total %>%
   filter(hist.count == 1)
 total <- total[which(total$Fused_Genes %in% hist.count$Fused_Genes),]
 length(unique(total$Fused_Genes))
+
+
+
+total<-rbind(total,to.add[,c("Sample","Fused_Genes","Histology.Broad")])
+
+
+#final<-aggregate(final$Caller, list(final$Fused_Genes,final$Sample,final$Fusion_Type,final$Histology.Broad), paste, collapse=",")
+
+#colnames(final)<-c("Fused_Genes","Sample","Fusion_Type","Histology.Broad","Callers")
 
 saveRDS(total,paste0(basePD,"/data/interim/fusion_all_list_filt.rds"))

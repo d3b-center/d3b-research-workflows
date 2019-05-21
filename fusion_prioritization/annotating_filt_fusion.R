@@ -12,8 +12,6 @@ basePD<-"/mnt/isilon/cbmi/variome/gaonkark/RNAseq_fusion/cbttc_gather_rna_fusion
 total<-read.delim(paste0(basePD,'/data/processed/Gene_Fusions_exp.txt'), stringsAsFactors = F)
 
 
-head(total)
-
 # annotate using COSMIC 
 for.table <- total
 cosmic <- read.csv(paste0(basePD,"/references/Cosmic_gene_census.csv"), stringsAsFactors = F)
@@ -30,14 +28,13 @@ table(for.table$Kinase)
 # annotate using transcription factors
 tf <- read.delim(paste0(basePD,'/references/TRANSFAC_TF.txt'), header = F)
 for.table$TF <- ifelse(for.table$Gene1 %in% tf$V1 | for.table$Gene2 %in% tf$V1, 'Yes', 'No')
-head(for.table$TF)
 
 # n = 284
 for.table <- unique(for.table[which(for.table$Cosmic == "Yes" | for.table$Kinase == "Yes" | for.table$TF == "Yes"),])
 #length(setdiff(drivers$Fused_Genes, for.table$Fused_Genes)) # 7 fusions are missing
 for.table$Gene1 <- NULL
 for.table$Gene2 <- NULL
-nrow(for.table)
+#nrow(for.table)
 
 clin <- read.delim(paste0(basePD,'/references/CBTTC-broad-histologies\ -\ CBTTC-broad-hist.csv'), stringsAsFactors = F,sep=",")
 clin<-clin[,c("sample","broad.histology","diagnosis")]
@@ -49,32 +46,35 @@ hist.dt.ct <- plyr::count(hist.dt.ct, 'Histology.Broad')
 hist.dt.ct$freq <- paste0(hist.dt.ct$Histology.Broad,' (n=', hist.dt.ct$freq, ')')
 colnames(hist.dt.ct)[2] <- 'Histology.Broad.Label'
 
-to.add<-readRDS(paste0(basePD,"/data/interim/fusion_all_list.rds"))
-colnames(to.add)[1]<-"Fused_Genes"
 
+all.callers<-readRDS(paste0(basePD,"/data/interim/fusion_all_list_filt.rds"))
 
 # excel tab 1
-extab1 <- merge(total, to.add, by = c('Sample','Fused_Genes'))
+extab1 <- merge(total, all.callers, by = c('Sample','Fused_Genes'))
 
+colnames(extab1)[5]<-"Histology.Broad"
 extab1 <- merge(extab1, hist.dt.ct, by = 'Histology.Broad')
-extab1 <- extab1[,c("Sample","Fused_Genes","Histology.Broad.Label","Caller","Fusion_Type")]
+#extab1 <- extab1[,c("Sample","Fused_Genes","Histology.Broad","Caller","Fusion_Type")]
 extab1 <- extab1[order(extab1$Fused_Genes, extab1$Sample),]
 extab1$Cytogenetics <- "NA"
-extab1 <- extab1[,c("Fused_Genes","Sample","Histology.Broad.Label","Caller","Fusion_Type","Cytogenetics")]
-
+#extab1 <- extab1[,c("Fused_Genes","Sample","Histology.Broad","Caller","Fusion_Type","Cytogenetics")]
 
 # excel tab 2
+print("fortable")
+
 extab2 <- merge(for.table, hist.dt.ct, by = 'Histology.Broad')
-extab2 <- extab2[,c("Sample","Fused_Genes","Histology.Broad.Label","Cosmic","TF","Kinase")]
+extab2 <- extab2[,c("Sample","Fused_Genes","Histology.Broad","Cosmic","TF","Kinase")]
 extab2 <- extab2 %>% 
-  group_by(Fused_Genes, Histology.Broad.Label, Cosmic, TF, Kinase) %>% 
+  group_by(Fused_Genes, Histology.Broad, Cosmic, TF, Kinase) %>% 
   summarise(Sample = toString(Sample), Samples.Found.In = n()) %>% 
   unique() %>% as.data.frame()
 extab2 <- unique(extab2[,c("Fused_Genes","Cosmic","TF","Kinase")])
 extab1 <- merge(extab1, extab2, by = 'Fused_Genes', all.x = T)
 extab1[is.na(extab1)] <- "No"
-# 2755
 nrow(extab1)
+
+#extab1<-aggregate(extab1$Caller, list(extab1$Fused_Genes,extab1$Sample,extab1$Fusion_Type,extab1$Histology.Broad), paste, collapse=",")
+
 write.table(extab1, file = paste0(basePD,'/data/processed/Filtered_Annotated_Fusions.txt'), quote = F, sep = "\t", row.names = F)
 
 
@@ -97,6 +97,7 @@ colnames(hist.ct)[2] <- 'Histology.Broad.Label'
 final<-total
 head(final)
 
+head(hist.ct)
 
 final <- merge(final, hist.ct, by= 'Histology.Broad')
 final <- final %>% group_by(Sample,Histology.Broad) %>% summarise(value = n()) 
