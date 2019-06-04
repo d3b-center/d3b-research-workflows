@@ -4,3 +4,6 @@
 [submodule "d3b_bic-seq2"]
 	path = d3b_bic-seq2
 	url = https://github.com/d3b-center/d3b_bic-seq2
+[submodule "codex2"]
+	path = codex2
+	url = https://github.com/d3b-center/codex2
