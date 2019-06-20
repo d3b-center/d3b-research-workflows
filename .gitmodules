@@ -7,3 +7,9 @@
 [submodule "codex2"]
 	path = codex2
 	url = https://github.com/d3b-center/codex2
+[submodule "kfdrc_sanger_tools"]
+	path = kfdrc_sanger_tools
+	url = https://github.com/d3b-center/kfdrc_sanger_tools
+[submodule "canvas_cnv"]
+	path = canvas_cnv
+	url = https://github.com/d3b-center/canvas_cnv
