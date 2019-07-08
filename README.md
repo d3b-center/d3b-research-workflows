@@ -7,7 +7,7 @@ git submodule update
 # then commit with your current changes,or as it's on changes
 ```
 
-fusion_prioritization:https://github.com/d3b-center/fusion_filtering_pipeline
+## fusion_prioritization: https://github.com/d3b-center/fusion_filtering_pipeline
 
 
 ## d3b_bic-seq2
