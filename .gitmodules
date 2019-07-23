@@ -13,3 +13,9 @@
 [submodule "canvas_cnv"]
 	path = canvas_cnv
 	url = https://github.com/d3b-center/canvas_cnv
+[submodule "fusion_filtering_pipeline"]
+	path = fusion_filtering_pipeline
+	url = https://github.com/d3b-center/fusion_filtering_pipeline
+[submodule "annotSV"]
+	path = annotSV
+	url = https://github.com/d3b-center/annotSV.git
