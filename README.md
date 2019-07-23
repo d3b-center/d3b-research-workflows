@@ -7,7 +7,8 @@ git submodule update
 # then commit with your current changes,or as it's on changes
 ```
 
-## fusion_prioritization: https://github.com/d3b-center/fusion_filtering_pipeline
+## fusion_prioritization: 
+STAR and arriba call filtering strategies and summarization
 
 
 ## d3b_bic-seq2
@@ -26,4 +27,4 @@ Illumina CNV caller, with exome capability
 CWL Implementation of CaVEMan snv caller and Pindel indel/sv caller
 
 ## annotSV
-CWL for annotSV https://github.com/d3b-center/annotSV
+CWL for annotSV 
