@@ -41,7 +41,12 @@ theme_Publication <- function(base_size=25, base_family="Arial") {
 
 
 #expression v12 ( same as v11 )
-exp<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.stranded.rds")
+exp_stranded<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.stranded.rds")
+exp_polya<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.polya.rds")
+# overlapping genes
+overlapgenes<-rownames(exp_stranded[which(rownames(exp_stranded) %in% rownames(exp_polya)),])
+exp<-cbind(exp_stranded[overlapgenes,],exp_polya[overlapgenes,])
+
 #clinical v12
 clinical<-read_tsv("data/raw/pbta-histologies.tsv")
 # xcell monoctype marker cells
@@ -75,6 +80,26 @@ write.table(cell_type_proportions,"data/analyzed/cell_proportions.tsv",sep="\t",
 
 # select mic mon
 cell_type_proportions_micro_mono<-cell_type_proportions[which(cell_type_proportions$Var2 %in% c("mic","mon")),]
+# renamw "Recurrence","Progressive" to Recurrence/Progressive
+cell_type_proportions_micro_mono$tumor_descriptor[which(cell_type_proportions_micro_mono$tumor_descriptor %in% c("Recurrence","Progressive"))]<-"Progressive/Recurrence"
+# remove Unavailable
+cell_type_proportions_micro_mono<-cell_type_proportions_micro_mono[-which(cell_type_proportions_micro_mono$tumor_descriptor=="Unavailable"),]
+
+
+# count 
+count<-table(cell_type_proportions_micro_mono[,c("molecular_subtype","tumor_descriptor")]) %>% as.data.frame()
+count<-count[which(count$Freq>=6),]
+
+# keep only types which have more than 6 counts
+cell_type_proportions_micro_mono_prog<-cell_type_proportions_micro_mono %>% 
+  filter(tumor_descriptor =="Progressive/Recurrence" & 
+           molecular_subtype %in% count[which(count$Freq>=6 & count$tumor_descriptor=="Progressive/Recurrence"),"molecular_subtype"])
+
+cell_type_proportions_micro_mono_init<-cell_type_proportions_micro_mono %>% 
+  filter(tumor_descriptor =="Initial CNS Tumor" & 
+           molecular_subtype %in% count[which(count$Freq>=6 & count$tumor_descriptor=="Initial CNS Tumor"),"molecular_subtype"])
+
+cell_type_proportions_micro_mono<-rbind(cell_type_proportions_micro_mono_init,cell_type_proportions_micro_mono_prog)
 
 png("plots/medullo_micro_mono.png",width = 1000,height = 1000)
 ggplot(cell_type_proportions_micro_mono,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_boxplot()+stat_compare_means()+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()
