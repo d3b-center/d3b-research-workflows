@@ -41,11 +41,11 @@ theme_Publication <- function(base_size=25, base_family="Arial") {
 
 
 #expression v12 ( same as v11 )
-exp<-readRDS("~/Documents/OpenPBTA-analysis/data/pbta-gene-expression-rsem-fpkm-collapsed.stranded.rds")
+exp<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.stranded.rds")
 #clinical v12
-clinical<-read_tsv("~/Documents/OpenPBTA-analysis/data/pbta-histologies.tsv")
+clinical<-read_tsv("data/raw/pbta-histologies.tsv")
 # xcell monoctype marker cells
-gene_marker<-read_tsv("~/Downloads/13059_2017_1349_MOESM3_ESM.txt") 
+gene_marker<-read_tsv("data/raw/13059_2017_1349_MOESM3_ESM.txt") 
 monocyte_marker<-gene_marker[grep("Monocyte",gene_marker$Celltype_Source_ID),] %>% select(-c(`# of genes`,Celltype_Source_ID)) %>% as.data.frame() %>% t() 
 monocyte_marker<-melt(monocyte_marker)
 monocyte_marker<-unique(monocyte_marker$value)
@@ -71,20 +71,20 @@ cell_type_proportions<-melt(cell_type_proportions)
 
 # add subtypes
 cell_type_proportions<-cell_type_proportions %>% left_join(clinical_medullo ,by=c("Var1"="Kids_First_Biospecimen_ID"))
-write.table(cell_type_proportions,"~/Documents/Dai/cell_proportions.tsv",sep="\t",quote = FALSE,row.names = FALSE)
+write.table(cell_type_proportions,"data/analyzed/cell_proportions.tsv",sep="\t",quote = FALSE,row.names = FALSE)
 
 # select mic mon
 cell_type_proportions_micro_mono<-cell_type_proportions[which(cell_type_proportions$Var2 %in% c("mic","mon")),]
 
-png("~/Documents/Dai/medullo_micro_mono.png",width = 1000,height = 1000)
+png("plots/medullo_micro_mono.png",width = 1000,height = 1000)
 ggplot(cell_type_proportions_micro_mono,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_boxplot()+stat_compare_means()+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()
 dev.off()
 
-png("~/Documents/Dai/medullo_all_brain_cells.png",height = 1000)
+png("plots/medullo_all_brain_cells.png",height = 1000)
 ggplot(cell_type_proportions,aes(x=Var2,y=value))+geom_boxplot()+stat_compare_means()+facet_wrap(~molecular_subtype,nrow = 4)+xlab("cell type")+ylab("proportions")+theme_Publication()
 dev.off()
 
 
 
-write.table(markers_df_brain,"~/Documents/Dai/marker_df_brain.tsv",sep="\t",quote = FALSE,row.names = FALSE)
+write.table(markers_df_brain,"data/analyzed/marker_df_brain.tsv",sep="\t",quote = FALSE,row.names = FALSE)
 
