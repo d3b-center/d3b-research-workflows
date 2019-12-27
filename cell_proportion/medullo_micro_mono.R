@@ -8,7 +8,7 @@ library(tidyr)
 library(ggplot2)
 library(ggpubr)
 
-theme_Publication <- function(base_size=25, base_family="Arial") {
+theme_Publication <- function(base_size=16, base_family="Arial") {
   library(grid)
   library(ggthemes)
   (theme_foundation(base_size=base_size, base_family=base_family)
@@ -18,9 +18,9 @@ theme_Publication <- function(base_size=25, base_family="Arial") {
             panel.background = element_rect(colour = NA),
             plot.background = element_rect(colour = NA),
             panel.border = element_rect(colour = NA),
-            axis.title = element_text(face = "bold",size = rel(0.85)),
-            axis.title.y = element_text(angle=90,vjust =2,size=rel(0.85)),
-            axis.title.x = element_text(vjust = -0.2,size=rel(0.85)),
+            axis.title = element_text(face = "bold",size = rel(0.95)),
+            axis.title.y = element_text(angle=90,vjust =2,size=rel(0.95)),
+            axis.title.x = element_text(vjust = -0.2,size=rel(0.95)),
             axis.text = element_text(size=12,color="black",face="bold"), 
             axis.line = element_line(colour="black",size=0.7),
             axis.ticks = element_line(),
@@ -40,7 +40,7 @@ theme_Publication <- function(base_size=25, base_family="Arial") {
 }
 
 
-#expression v12 ( same as v11 )
+#expression v12 ( same as v11 + 44 RNA-seq BGI stranded data)
 exp_stranded<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.stranded.rds")
 exp_polya<-readRDS("data/raw/pbta-gene-expression-rsem-fpkm-collapsed.polya.rds")
 # overlapping genes
@@ -80,7 +80,7 @@ write.table(cell_type_proportions,"data/analyzed/cell_proportions.tsv",sep="\t",
 
 # select mic mon
 cell_type_proportions_micro_mono<-cell_type_proportions[which(cell_type_proportions$Var2 %in% c("mic","mon")),]
-# renamw "Recurrence","Progressive" to Recurrence/Progressive
+# rename "Recurrence","Progressive" to Recurrence/Progressive
 cell_type_proportions_micro_mono$tumor_descriptor[which(cell_type_proportions_micro_mono$tumor_descriptor %in% c("Recurrence","Progressive"))]<-"Progressive/Recurrence"
 # remove Unavailable
 cell_type_proportions_micro_mono<-cell_type_proportions_micro_mono[-which(cell_type_proportions_micro_mono$tumor_descriptor=="Unavailable"),]
@@ -101,14 +101,30 @@ cell_type_proportions_micro_mono_init<-cell_type_proportions_micro_mono %>%
 
 cell_type_proportions_micro_mono<-rbind(cell_type_proportions_micro_mono_init,cell_type_proportions_micro_mono_prog)
 
-png("plots/medullo_micro_mono.png",width = 1000,height = 1000)
-ggplot(cell_type_proportions_micro_mono,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_boxplot()+stat_compare_means()+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()
+# microglia and monocyte cell proportions in initial tumor CNS
+png("plots/medullo_micro_mono_init_cells.png",width = 1200,height = 1000)
+ggplot(cell_type_proportions_micro_mono_init,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS")
 dev.off()
 
-png("plots/medullo_all_brain_cells.png",height = 1000)
-ggplot(cell_type_proportions,aes(x=Var2,y=value))+geom_boxplot()+stat_compare_means()+facet_wrap(~molecular_subtype,nrow = 4)+xlab("cell type")+ylab("proportions")+theme_Publication()
+# microglia and monocyte cell proportions in subtypes with enough recurrent/progressive and initial tumor CNS
+subtypes_with_prog<-unique(cell_type_proportions_micro_mono_prog$molecular_subtype)
+
+# merge init and prog samples from molecular_subtypes in subtypes_with_prog
+cell_type_proportions_micro_mono_prog<-rbind(cell_type_proportions_micro_mono_prog,cell_type_proportions_micro_mono_init %>% filter(molecular_subtype %in% subtypes_with_prog))
+
+png("plots/medullo_micro_mono_init_prog_cells.png",width = 1200,height = 500)
+ggplot(cell_type_proportions_micro_mono_prog,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and  (>=6) progressive CNS")
 dev.off()
 
+# microglia and monocyte cell propertions in initial tumor CNS and broad histologies with recurrent/progressive tumors >=6 frequency
+png("plots/medullo_micro_mono.png",width = 1200,height = 1000)
+ggplot(cell_type_proportions_micro_mono,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and (>=6) progressive CNS")
+dev.off()
+
+# all brain cells in BRETIGA compared for all subtypes
+png("plots/medullo_all_brain_cells.png",width = 1000,height = 1000)
+ggplot(cell_type_proportions,aes(x=Var2,y=value))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype,nrow = 4)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("All brain cells in BRETIGA compared for all CNS in subtypes")
+dev.off()
 
 
 write.table(markers_df_brain,"data/analyzed/marker_df_brain.tsv",sep="\t",quote = FALSE,row.names = FALSE)
