@@ -7,14 +7,16 @@ library(reshape2)
 library(tidyr)
 library(ggplot2)
 library(ggpubr)
+library(tidyverse)
+library(forcats)
 
-theme_Publication <- function(base_size=16, base_family="Arial") {
+theme_Publication <- function(base_size=16, base_family="Helvetica") {
   library(grid)
   library(ggthemes)
   (theme_foundation(base_size=base_size, base_family=base_family)
     + theme(plot.title = element_text(face = "bold",
                                       size = rel(1.2), hjust = 0.5),
-            text = element_text(family="Arial"),
+            text = element_text(family="Helvetica"),
             panel.background = element_rect(colour = NA),
             plot.background = element_rect(colour = NA),
             panel.border = element_rect(colour = NA),
@@ -102,8 +104,13 @@ cell_type_proportions_micro_mono_init<-cell_type_proportions_micro_mono %>%
 cell_type_proportions_micro_mono<-rbind(cell_type_proportions_micro_mono_init,cell_type_proportions_micro_mono_prog)
 
 # microglia and monocyte cell proportions in initial tumor CNS
-png("plots/medullo_micro_mono_init_cells.png",width = 1200,height = 1000)
-ggplot(cell_type_proportions_micro_mono_init,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS")
+pdf("plots/medullo_micro_mono_init_cells.pdf",width = 12,height = 10)
+ggplot(cell_type_proportions_micro_mono_init,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("Relative cell proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS")+ scale_x_discrete(labels= c("Microglia","Monocytes"))+geom_point(pch = 21, position = position_jitterdodge())+ylim(-0.5,0.5)
+dev.off()
+
+# black and white
+pdf("plots/medullo_micro_mono_init_cells_bw.pdf",width = 12,height = 10)
+ggplot(cell_type_proportions_micro_mono_init,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("Relative cell proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS")+ scale_x_discrete(labels= c("Microglia","Monocytes"))+scale_fill_grey()+geom_point(pch = 21, position = position_jitterdodge(),color="white")+ylim(-0.5,0.5)
 dev.off()
 
 # microglia and monocyte cell proportions in subtypes with enough recurrent/progressive and initial tumor CNS
@@ -112,18 +119,22 @@ subtypes_with_prog<-unique(cell_type_proportions_micro_mono_prog$molecular_subty
 # merge init and prog samples from molecular_subtypes in subtypes_with_prog
 cell_type_proportions_micro_mono_prog<-rbind(cell_type_proportions_micro_mono_prog,cell_type_proportions_micro_mono_init %>% filter(molecular_subtype %in% subtypes_with_prog))
 
-png("plots/medullo_micro_mono_init_prog_cells.png",width = 1200,height = 500)
-ggplot(cell_type_proportions_micro_mono_prog,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and  (>=6) progressive CNS")
+pdf("plots/medullo_micro_mono_init_prog_cells.pdf",width = 16,height = 5)
+ggplot(cell_type_proportions_micro_mono_prog,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("Relative cell proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and  (>=6) progressive CNS")+ scale_x_discrete(labels= c("Microglia","Monocytes"))+geom_point(pch = 21, position = position_jitterdodge())+ylim(-0.5,0.5)
 dev.off()
 
-# microglia and monocyte cell propertions in initial tumor CNS and broad histologies with recurrent/progressive tumors >=6 frequency
-png("plots/medullo_micro_mono.png",width = 1200,height = 1000)
-ggplot(cell_type_proportions_micro_mono,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and (>=6) progressive CNS")
+# black and white
+pdf("plots/medullo_micro_mono_init_prog_cells_bw.pdf",width = 16,height = 5)
+ggplot(cell_type_proportions_micro_mono_prog,aes(x=Var2,y=value,fill=tumor_descriptor))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype)+xlab("cell type")+ylab("Relative cell proportions")+theme_Publication()+ggtitle("Cell proportion of microglia and monocyte in initial tumor CNS and  (>=6) progressive CNS")+ scale_x_discrete(labels= c("Microglia","Monocytes"))+scale_fill_grey()+geom_point(pch = 21, position = position_jitterdodge(),color="white")+ylim(-0.5,0.5)
 dev.off()
+
+
 
 # all brain cells in BRETIGA compared for all subtypes
-png("plots/medullo_all_brain_cells.png",width = 1000,height = 1000)
-ggplot(cell_type_proportions,aes(x=Var2,y=value))+geom_violin()+stat_compare_means(size=6)+facet_wrap(~molecular_subtype,nrow = 4)+xlab("cell type")+ylab("proportions")+theme_Publication()+ggtitle("All brain cells in BRETIGA compared for all CNS in subtypes")
+# group by molecular_subtype and arrange by value
+cell_type_proportions<-cell_type_proportions %>% group_by(molecular_subtype) %>% arrange(desc(value)) 
+pdf("plots/medullo_all_brain_cells.pdf",width = 20,height = 10)
+ggplot(cell_type_proportions,aes(x=Var1,y=value,fill=fct_reorder(Var2,value,.desc=TRUE)))+geom_bar(stat = "identity")+xlab("Sample")+ylab("Relative cell proportions")+theme_Publication()+ggtitle("All brain cells in BRETIGA compared for all CNS in subtypes")+theme(axis.text.x = element_text(size=12,color="black",face="bold",angle = 90))+guides(fill=guide_legend(title="cell types"))
 dev.off()
 
 
