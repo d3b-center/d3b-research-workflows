@@ -20,8 +20,8 @@ cell type proportions use all 1000 marker genes from mic (other cell types in BR
 cell_type_proportions = findCells(exp,markers = markers_df_brain, nMarker = 1000,method = "SVD")
 
 #### Output
-plots/medullo_micro_mono_init_cells.png :  microglia and monocyte cell proportions in subtypes with >=6 initial tumor CNS
-plots/medullo_micro_mono_init_prog_cells.png : microglia and monocyte cell proportions in subtypes with >=6 initial tumor CNS and >=6 recurrent/progressive CNS
+[plots/medullo_micro_mono_init_cells.png](https://github.com/d3b-center/d3b-research-workflows/blob/cell-proportion/cell_proportion/plots/medullo_micro_mono_init_cells.png) :  microglia and monocyte cell proportions in subtypes with >=6 initial tumor CNS
+[plots/medullo_micro_mono_init_prog_cells.png](https://github.com/d3b-center/d3b-research-workflows/blob/cell-proportion/cell_proportion/plots/medullo_micro_mono_init_prog_cells.png) : microglia and monocyte cell proportions in subtypes with >=6 initial tumor CNS and >=6 recurrent/progressive CNS
 data/analyzed/cell_proportions.tsv : cell proportions calculated for all cell types in marker gene dataframe for all medullo samples.
 
 #### Additional outputs
